@@ -60,18 +60,20 @@ const calculateIndividualFrameScores = R.pipe(
   )
 )
 
-function calculatePointTotal(bowlingPoints) {
-  return R.pipe(
-    calculateIndividualFrameScores,
-    R.mapAccum((score, currentFrame) => {
-      if(R.is(String, currentFrame)) return ['-', '-']
-      score += currentFrame
-      return [score, score]
-    }, 0),
-    R.prop(1)
-    )(bowlingPoints)
-}
+const sumFrameScores = R.pipe(
+  R.mapAccum((score, currentFrameScore) => {
+    if(R.is(String, currentFrameScore) || R.is(String, score)) return ['-', '-']
+    const updatedScore = score + currentFrameScore
+    return [updatedScore, updatedScore]
+  }, 0),
+  R.prop(1)
+)
 
+const calculatePointTotal = R.pipe(
+  calculateIndividualFrameScores,
+  sumFrameScores
+)
+ 
 module.exports = {
   calculateIndividualFrameScores,
   calculatePointTotal

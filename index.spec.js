@@ -1,5 +1,10 @@
 const { calculateIndividualFrameScores, calculatePointTotal } = require('./index')
 
+
+const perfectGame = [10, 0, 10, 0, 10, 0, 10, 0, 10, 0, 10, 0, 10, 0, 10, 0, 10, 0, 10, 10, 10]
+const perfectFrameScores = [30, 30, 30, 30, 30, 30, 30, 30, 30, 30]
+const perfectRunningScores = [30, 60, 90, 120, 150, 180, 210, 240, 270, 300]
+
 describe('#calculateIndividualFrameScores', () => {
   describe('accepts an array of bowling scores, and returns accurate frame scoring', () => {
     describe('without strikes or spares', () => {
@@ -80,8 +85,6 @@ describe('#calculateIndividualFrameScores', () => {
         expect(result).toEqual(nineFrameScores.concat([13]))
       })
       it('handles perfect games correctly', () => {
-        const perfectGame = [10, 0, 10, 0, 10, 0, 10, 0, 10, 0, 10, 0, 10, 0, 10, 0, 10, 0, 10, 10, 10]
-        const perfectFrameScores = [30, 30, 30, 30, 30, 30, 30, 30, 30, 30]
         const results = calculateIndividualFrameScores(perfectGame)
         expect(results).toEqual(perfectFrameScores)
       })
@@ -96,10 +99,40 @@ describe('#calculatePointTotal', () => {
       expect(result).toEqual([3, 10, 21, 36, 45, 48, 55, 66, 81, 90])
     })
   })
-  describe('with strikes and spares', () => {
+  describe('with strikes', () => {
     it('handles strike frames without modifiers', () => {
       const result = calculatePointTotal([10, 0])
       expect(result).toEqual(['-'])
+    })
+    it('handles strike followed by half frame', () => {
+      const result = calculatePointTotal([10, 0, 5])
+      expect(result).toEqual(['-', '-'])
+    })
+    it('handles a strike followed by a frame', () => {
+      const result = calculatePointTotal([10, 0, 5, 4])
+      expect(result).toEqual([19, 28])
+    })
+    it('handles two strikes in a row', () => {
+      const result = calculatePointTotal([10, 0, 10, 0])
+      expect(result).toEqual(['-', '-'])
+    })
+    it('handles two strikes in a row followed by frame', () => {
+      const result = calculatePointTotal([10, 0, 10, 0, 4, 3])
+      expect(result).toEqual([24, 41, 48])
+    })
+    it('handles perfect games correctly', () => {
+      const results = calculatePointTotal(perfectGame)
+      expect(results).toEqual(perfectRunningScores)
+    })
+  })
+  describe('with spares', () => {
+    it('handles a single spare correctly', () => {
+      const results = calculatePointTotal([5, 5])
+      expect(results).toEqual(['-'])
+    })
+    it('handles a spare followed by a half frame', () => {
+      const results = calculatePointTotal([5, 5, 5])
+      expect(results).toEqual([15, 20])
     })
   })
 })
