@@ -1,7 +1,5 @@
 const R = require('ramda')
 
-const eleventhFrameIndex = 10
-
 const isStrike = frame => R.equals(10, R.prop(0, frame)) && R.equals(0, R.prop(1, frame))
 
 const isFullFrame = ([a, b]) => R.not(R.isNil(b))
@@ -18,6 +16,8 @@ const canGetStrikeModifier = ([nextFrame, followingNextFrame]) => {
 
 const getSpareModifier = R.head
 
+const hasTenthFrame = arr => !R.isNil(R.prop(9, arr))
+
 const calculateFrameScore = (nextFrames, currentFrame) => { 
   const [nextFrame] = nextFrames
   let sum = R.sum(currentFrame)
@@ -30,28 +30,37 @@ const calculateFrameScore = (nextFrames, currentFrame) => {
   return [[currentFrame, nextFrame], sum]
 }
 
-const mergeLastTwoFrames = R.pipe(
-  R.takeLast(2),
+const handleFirst9Frames = reference10thframe => R.pipe(
+  R.take(9),
+  R.mapAccumRight(calculateFrameScore, [reference10thframe]),
+  R.prop(1)
+)
+
+const handle10thFrame = R.pipe(
+  R.drop(9),
+  R.flatten,
   R.sum,
   R.append(R.__, [])
 )
 
-const fixExtraFrameIfNecessary = R.ifElse(
-  R.has(eleventhFrameIndex),
-  R.converge(R.concat, [
-    R.take(9),
-    mergeLastTwoFrames]),
-  R.identity
-)
-
+const handle10FrameGame = frames => {
+  return R.pipe(
+    R.converge(
+      R.concat,
+      [handleFirst9Frames(R.prop(9,frames)), handle10thFrame]
+    )
+  )(frames)
+}
 const calculateIndividualFrameScores = R.pipe(
   R.splitEvery(2),
-  R.mapAccumRight(calculateFrameScore, [null]),
-  R.prop(1),
-  fixExtraFrameIfNecessary
+  R.ifElse(
+    hasTenthFrame,
+    handle10FrameGame,
+    R.pipe(R.mapAccumRight(calculateFrameScore, [null]), R.prop(1))
+  )
 )
 
-function calculateRollingScore(bowlingPoints) {
+function calculatePointTotal(bowlingPoints) {
   return R.pipe(
     calculateIndividualFrameScores,
     R.mapAccum((score, currentFrame) => {
@@ -65,5 +74,5 @@ function calculateRollingScore(bowlingPoints) {
 
 module.exports = {
   calculateIndividualFrameScores,
-  calculateRollingScore
+  calculatePointTotal
 }

@@ -1,4 +1,4 @@
-const { calculateIndividualFrameScores, calculateRollingScore } = require('./index')
+const { calculateIndividualFrameScores, calculatePointTotal } = require('./index')
 
 describe('#calculateIndividualFrameScores', () => {
   describe('accepts an array of bowling scores, and returns accurate frame scoring', () => {
@@ -55,7 +55,7 @@ describe('#calculateIndividualFrameScores', () => {
       ]
       describe('with one strike', () => {
         it('handles a strike and a gutter ball correctly', () => {
-          const result = calculateIndividualFrameScores(nineFrames.concat([10, 0]))
+          const result = calculateIndividualFrameScores(nineFrames.concat([10]))
           expect(result).toEqual(nineFrameScores.concat([10]))
         })
         it('handles a single strike correctly', () => {
@@ -79,20 +79,26 @@ describe('#calculateIndividualFrameScores', () => {
         const result = calculateIndividualFrameScores(nineFrames.concat([5, 5, 3]))
         expect(result).toEqual(nineFrameScores.concat([13]))
       })
+      it('handles perfect games correctly', () => {
+        const perfectGame = [10, 0, 10, 0, 10, 0, 10, 0, 10, 0, 10, 0, 10, 0, 10, 0, 10, 0, 10, 10, 10]
+        const perfectFrameScores = [30, 30, 30, 30, 30, 30, 30, 30, 30, 30]
+        const results = calculateIndividualFrameScores(perfectGame)
+        expect(results).toEqual(perfectFrameScores)
+      })
     })
   })
 })
 
-describe('#calculateRollingScore', () => {
+describe('#calculatePointTotal', () => {
   describe('no strikes/spares', () => {
     it('handles multiple frames correctly', () => {
-      const result = calculateRollingScore([1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0])
+      const result = calculatePointTotal([1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0])
       expect(result).toEqual([3, 10, 21, 36, 45, 48, 55, 66, 81, 90])
     })
   })
   describe('with strikes and spares', () => {
     it('handles strike frames without modifiers', () => {
-      const result = calculateRollingScore([10, 0])
+      const result = calculatePointTotal([10, 0])
       expect(result).toEqual(['-'])
     })
   })
